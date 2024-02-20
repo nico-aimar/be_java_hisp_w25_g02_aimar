@@ -4,8 +4,8 @@ import com.bootcamp.be_java_hisp_w25_g02.dto.request.PostDTO;
 
 import java.util.List;
 
-public record FollowingPostDTO(
-    Integer user_id,
-    List<PostDTO> posts
-) {
-}
+public record UserPromoPostsDTO(
+   Integer user_id,
+   String user_name,
+   List<PostDTO> posts
+) {}

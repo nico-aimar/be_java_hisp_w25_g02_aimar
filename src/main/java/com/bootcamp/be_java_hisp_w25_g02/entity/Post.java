@@ -1,10 +1,7 @@
 package com.bootcamp.be_java_hisp_w25_g02.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
@@ -21,4 +18,15 @@ public class Post {
     Product product;
     Integer category;
     Double price;
+    Boolean has_promo;
+    Double discount;
+
+    public Post(Integer post_id, Integer user_id, LocalDate postDate, Product product, Integer category, Double price) {
+        this.post_id = post_id;
+        this.user_id = user_id;
+        this.postDate = postDate;
+        this.product = product;
+        this.category = category;
+        this.price = price;
+    }
 }
