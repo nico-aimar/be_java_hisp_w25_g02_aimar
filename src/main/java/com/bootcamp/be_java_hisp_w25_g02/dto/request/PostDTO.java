@@ -11,5 +11,7 @@ public record PostDTO(
         LocalDate date,
         ProductDTO product,
         Integer category,
-        Double price
+        Double price,
+        Boolean has_promo,
+        Double discount
 ) { }

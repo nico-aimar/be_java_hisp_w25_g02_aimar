@@ -2,6 +2,7 @@ package com.bootcamp.be_java_hisp_w25_g02.controller;
 
 import com.bootcamp.be_java_hisp_w25_g02.dto.response.FollowerCountDTO;
 import com.bootcamp.be_java_hisp_w25_g02.dto.response.FollowerListDTO;
+import com.bootcamp.be_java_hisp_w25_g02.dto.response.UserDTO;
 import com.bootcamp.be_java_hisp_w25_g02.dto.response.UserFollowingDTO;
 import com.bootcamp.be_java_hisp_w25_g02.service.IUserService;
 import com.bootcamp.be_java_hisp_w25_g02.service.UserServiceImpl;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 
 @RestController
 public class UserController {
@@ -21,6 +24,7 @@ public class UserController {
     public UserController(UserServiceImpl userService, IUserService userService1) {
         this.userService = userService1;
     }
+
     @GetMapping("/users/{userId}/followed/list")
     public ResponseEntity<UserFollowingDTO> getFollowedSellers(@PathVariable Integer userId, @RequestParam(required = false) String order) {
         return new ResponseEntity<>(userService.getFollowedSellers(userId, order), HttpStatus.OK);

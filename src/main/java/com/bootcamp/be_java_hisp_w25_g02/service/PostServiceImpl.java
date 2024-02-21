@@ -1,6 +1,5 @@
 package com.bootcamp.be_java_hisp_w25_g02.service;
 
-import com.bootcamp.be_java_hisp_w25_g02.dto.request.PostWithDiscountDTO;
 import com.bootcamp.be_java_hisp_w25_g02.dto.response.*;
 
 import com.bootcamp.be_java_hisp_w25_g02.dto.request.PostDTO;
@@ -21,7 +20,6 @@ import java.util.Optional;
 
 @Service
 public class PostServiceImpl implements IPostService{
-
     IPostRepository postRepository;
     IUserService userService;
     IUserRepository userRepository;
@@ -71,18 +69,18 @@ public class PostServiceImpl implements IPostService{
     }
 
     @Override
-    public GenericResponseDTO savePostWithDiscount(PostWithDiscountDTO postWithDiscountDTO) {
-        if (discountDtoHasErrors(postWithDiscountDTO)) {
+    public GenericResponseDTO savePostWithDiscount(PostDTO postDTO) {
+        if (discountDtoHasErrors(postDTO)) {
             throw new BadRequestException("Datos del post mal formados o incompletos.");
         }
-        long id = postRepository.savePost(mapDiscountDtoToPost(postWithDiscountDTO));
+        long id = postRepository.savePost(mapDtoToPost(postDTO));
         return new GenericResponseDTO("Post con descuento creado con exito con el id: " + id);
     }
 
     @Override
     public PromoPostsCountDTO getPromoPostsCount(Integer userId) {
-        Optional<User> user = getUserById(userId);
-        List<Post> postList = getPostsByUserId(userId);
+        Optional<User> user = validateUserById(userId);
+        List<Post> postList = validatePostsByUserId(userId);
 
         List<Post> promoPostsList = postList.stream()
                 .filter(post -> post.getHas_promo() != null && post.getHas_promo()).toList();
@@ -95,8 +93,8 @@ public class PostServiceImpl implements IPostService{
 
     @Override
     public SellerPromoPostsDTO getPromoPosts(Integer userId) {
-        Optional<User> user = getUserById(userId);
-        List<Post> postList = getPostsByUserId(userId);
+        Optional<User> user = validateUserById(userId);
+        List<Post> postList = validatePostsByUserId(userId);
 
         List<Post> promoPostsList = postList.stream()
                 .filter(post -> post.getHas_promo() != null && post.getHas_promo()).toList();
@@ -111,10 +109,36 @@ public class PostServiceImpl implements IPostService{
         );
     }
 
+    @Override
+    public GenericResponseDTO deletePost(Integer postId) {
+        Optional<Post> post = validatePostByPostId(postId);
+        postRepository.deletePost(post.get());
+        return new GenericResponseDTO("El post con id " + postId + " fue correctamente eliminado.");
+    }
+
+    @Override
+    public List<PostRespDTO> getAllPosts() {
+        return postRepository.findAll().stream().map(this::mapPostToRespDto).toList();
+    }
+
+    @Override
+    public GenericResponseDTO updatePost(Integer id, PostDTO postDTO) {
+        validatePostByPostId(id);
+        postRepository.updatePost(id, mapDtoToPost(postDTO));
+        return new GenericResponseDTO("El post con id " + id + " se actualizó correctamente.");
+    }
+
     // ###### Private Methods ######
     private PostDTO mapPostToDTO(Post post){
-        return new PostDTO(post.getUser_id(), post.getPostDate(), mapToProductDTO(post.getProduct()),post.getCategory(), post.getPrice());
-
+        return new PostDTO(
+                post.getUser_id(),
+                post.getPostDate(),
+                mapToProductDTO(post.getProduct()),
+                post.getCategory(),
+                post.getPrice(),
+                post.getHas_promo(),
+                post.getDiscount()
+        );
     }
 
     private ProductDTO mapToProductDTO(Product product){
@@ -134,24 +158,9 @@ public class PostServiceImpl implements IPostService{
                         postDTO.product().notes()
                 ),
                 postDTO.category(),
-                postDTO.price());
-    }
-    private Post mapDiscountDtoToPost(PostWithDiscountDTO postWithDiscountDTO){
-        return new Post(0,
-                postWithDiscountDTO.user_id(),
-                postWithDiscountDTO.date(),
-                new Product(
-                        postWithDiscountDTO.product().product_id(),
-                        postWithDiscountDTO.product().product_name(),
-                        postWithDiscountDTO.product().type(),
-                        postWithDiscountDTO.product().brand(),
-                        postWithDiscountDTO.product().color(),
-                        postWithDiscountDTO.product().notes()
-                ),
-                postWithDiscountDTO.category(),
-                postWithDiscountDTO.price(),
-                postWithDiscountDTO.has_promo(),
-                postWithDiscountDTO.discount()
+                postDTO.price(),
+                postDTO.has_promo(),
+                postDTO.discount()
         );
     }
 
@@ -168,17 +177,17 @@ public class PostServiceImpl implements IPostService{
         );
     }
 
-    private boolean discountDtoHasErrors(PostWithDiscountDTO postWithDiscountDTO) {
-        return postWithDiscountDTO.user_id() == null ||
-                postWithDiscountDTO.date() == null ||
-                postWithDiscountDTO.product() == null ||
-                postWithDiscountDTO.category() == null ||
-                postWithDiscountDTO.price() == null ||
-                postWithDiscountDTO.has_promo() == null ||
-                postWithDiscountDTO.discount() == null;
+    private boolean discountDtoHasErrors(PostDTO postDTO) {
+        return postDTO.user_id() == null ||
+                postDTO.date() == null ||
+                postDTO.product() == null ||
+                postDTO.category() == null ||
+                postDTO.price() == null ||
+                postDTO.has_promo() == null ||
+                postDTO.discount() == null;
     }
 
-    private Optional<User> getUserById(Integer userId) {
+    private Optional<User> validateUserById(Integer userId) {
         Optional<User> user = userRepository.findById(userId);
         if (user.isEmpty()) {
             throw new NotFoundException("El usuario solicitado no existe.");
@@ -186,7 +195,7 @@ public class PostServiceImpl implements IPostService{
         return user;
     }
 
-    private List<Post> getPostsByUserId(Integer userId) {
+    private List<Post> validatePostsByUserId(Integer userId) {
         List<Post> postList = postRepository.findAll().stream()
                 .filter(post -> post.getUser_id().equals(userId))
                 .toList();
@@ -194,5 +203,13 @@ public class PostServiceImpl implements IPostService{
             throw new NotFoundException("El usuario solicitado no posee posts.");
         }
         return postList;
+    }
+
+    private Optional<Post> validatePostByPostId(Integer postId) {
+        Optional<Post> post = postRepository.findById(postId);
+        if (post.isEmpty()) {
+            throw new NotFoundException("El post que desea eliminar, no existe.");
+        }
+        return post;
     }
 }

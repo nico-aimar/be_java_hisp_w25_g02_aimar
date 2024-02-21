@@ -11,5 +11,6 @@ public interface IPostRepository {
     Optional<Product> findProductById(int id);
     long savePost(Post post);
     List<Post> findByUserId(Integer userId);
-
+    void deletePost(Post post);
+    void updatePost(Integer id, Post post);
 }

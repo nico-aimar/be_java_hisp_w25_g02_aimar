@@ -1,19 +1,13 @@
 package com.bootcamp.be_java_hisp_w25_g02.controller;
 import com.bootcamp.be_java_hisp_w25_g02.dto.request.PostDTO;
-import com.bootcamp.be_java_hisp_w25_g02.dto.request.PostWithDiscountDTO;
+import com.bootcamp.be_java_hisp_w25_g02.dto.response.PostRespDTO;
 import com.bootcamp.be_java_hisp_w25_g02.dto.response.SellerPromoPostsDTO;
 import com.bootcamp.be_java_hisp_w25_g02.service.IPostService;
 import com.bootcamp.be_java_hisp_w25_g02.service.PostServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -35,8 +29,8 @@ public class ProductController {
     }
 
     @PostMapping("/products/promo-post")
-    public ResponseEntity<?> savePostWithDiscount(@RequestBody PostWithDiscountDTO postWithDiscountDTO) {
-        return new ResponseEntity<>(postService.savePostWithDiscount(postWithDiscountDTO), HttpStatus.OK);
+    public ResponseEntity<?> savePostWithDiscount(@RequestBody PostDTO postDTO) {
+        return new ResponseEntity<>(postService.savePostWithDiscount(postDTO), HttpStatus.OK);
     }
 
     @GetMapping("/products/promo-post/count")
@@ -47,5 +41,20 @@ public class ProductController {
     @GetMapping("/products/promo-post/list")
     public ResponseEntity<SellerPromoPostsDTO> getPromoPostsBySeller(@RequestParam Integer user_id) {
         return new ResponseEntity<>(postService.getPromoPosts(user_id), HttpStatus.OK);
+    }
+
+    @GetMapping("/products/post")
+    public ResponseEntity<List<PostRespDTO>> getAllPosts() {
+        return new ResponseEntity<>(postService.getAllPosts(), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/products/post/{postId}")
+    public ResponseEntity<?> deletePost(@PathVariable Integer postId) {
+        return new ResponseEntity<>(postService.deletePost(postId), HttpStatus.OK);
+    }
+
+    @PutMapping("/products/post/{postId}")
+    public ResponseEntity<?> updatePost(@PathVariable Integer postId, @RequestBody PostDTO postDTO) {
+        return new ResponseEntity<>(postService.updatePost(postId, postDTO), HttpStatus.OK);
     }
 }
